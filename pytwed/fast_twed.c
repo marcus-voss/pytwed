@@ -17,6 +17,7 @@ Have fun.
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <limits.h>
 
 #define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
 #include <Python.h>
@@ -32,10 +33,11 @@ static PyObject* twed_ (PyObject* dummy, PyObject* args, PyObject* kw) {
     double nu = 0.001;
     double lmbda = 1.0;
     int degree = 2;
+	int radius = INT_MAX;
 
-    static char* keywords[] = { "arr1", "arr2", "arr1_spec", "arr2_spec", "nu", "lmbda", "degree", NULL };
+    static char* keywords[] = { "arr1", "arr2", "arr1_spec", "arr2_spec", "nu", "lmbda", "degree", "radius", NULL };
 
-    if (!PyArg_ParseTupleAndKeywords(args, kw, "OOOO|ddi", keywords, &input1, &input2, &input3, &input4, &nu, &lmbda, &degree)) {
+    if (!PyArg_ParseTupleAndKeywords(args, kw, "OOOO|ddii", keywords, &input1, &input2, &input3, &input4, &nu, &lmbda, &degree, &radius)) {
         Py_RETURN_NONE;
     }
 
@@ -78,7 +80,7 @@ static PyObject* twed_ (PyObject* dummy, PyObject* args, PyObject* kw) {
     double* arr1_specs_data = (double*)PyArray_DATA(ts_specs1);
     double* arr2_specs_data = (double*)PyArray_DATA(ts_specs2);
 
-    double ret = DTWEDL1d(n_feats, arr1_data, (int)arr1_dims[0], arr1_specs_data, arr2_data, (int)arr2_dims[0], arr2_specs_data, nu, lmbda, degree);
+    double ret = DTWEDL1d(n_feats, arr1_data, (int)arr1_dims[0], arr1_specs_data, arr2_data, (int)arr2_dims[0], arr2_specs_data, nu, lmbda, degree, radius);
 
     Py_DECREF(arr1);
     Py_DECREF(arr2);
@@ -105,7 +107,7 @@ static PyMethodDef twedmethods[] = {
       "\tSecond input (M x D)\n"
       "\tTimepoint indices for the first input (N x 1)\n"
       "\tTimepoint indices for the second input (M x 1)\n"
-      "\tKeywords nu (double), lmbda (double), degree (integer)\n"
+      "\tKeywords nu (double), lmbda (double), degree (integer), radius (integer)\n"
       "\n"
       "Output:\n"
       "\tThe distance between the two inputs." },

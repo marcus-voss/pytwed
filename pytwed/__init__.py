@@ -3,7 +3,7 @@ from .slow_twed import twed as pytwed
 import numpy as np
 
 
-def twed(s1, s2, ts1=None, ts2=None, lmbda=1.0, nu=0.001, p=2, fast=True):
+def twed(s1, s2, ts1=None, ts2=None, lmbda=1.0, nu=0.001, p=2, radius=None, fast=True):
     """
     Time Warped Edit Distance (TWED)
 
@@ -57,12 +57,15 @@ def twed(s1, s2, ts1=None, ts2=None, lmbda=1.0, nu=0.001, p=2, fast=True):
     if len(s2.shape) == 1:
         s2 = s2.reshape((-1, 1))
 
+    if radius is None:
+        radius = max(len(s1), len(s2))
+
     s1 = np.vstack(([[0] * s1.shape[1]], s1))
     ts1 = np.hstack(([0], ts1))
     s2 = np.vstack(([[0] * s2.shape[1]], s2))
     ts2 = np.hstack(([0], ts2))
 
     if fast:
-        return ctwed(arr1=s1, arr2=s2, arr1_spec=ts1, arr2_spec=ts2, nu=float(nu), lmbda=float(lmbda), degree=p)
+        return ctwed(arr1=s1, arr2=s2, arr1_spec=ts1, arr2_spec=ts2, nu=float(nu), lmbda=float(lmbda), degree=p, radius=radius)
     else:
         return pytwed(A=s1, timeSA=ts1, B=s2, timeSB=ts2, nu=nu, lmbda=lmbda, degree=p)[0]

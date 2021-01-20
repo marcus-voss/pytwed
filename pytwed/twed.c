@@ -55,6 +55,7 @@ double: the TWED distance between time series ta and tb.
 
 #include "twed.h"
 #include <stdlib.h> 
+#include <stdio.h>
 
 #define INDEX(x, y) ((y)*arr1_lgt + (x))
 
@@ -68,21 +69,40 @@ double dist(double* arr1, double* arr2, int lgt, int degree) {
     return pow(ret, 1.0 / degree);
 }
 
-double DTWEDL1d(int n_feats, double* arr1, int arr1_lgt, double* arr1_spec, double* arr2, int arr2_lgt, double* arr2_spec, double nu, double lambda, int degree) {
+double DTWEDL1d(int n_feats, double* arr1, int arr1_lgt, double* arr1_spec, double* arr2, int arr2_lgt, double* arr2_spec, double nu, double lambda, int degree, int radius) {
     // Version based on the python version
+	
+	radius = fmax(radius, fabs(arr1_lgt-arr2_lgt));
+	//printf("radius: %d \n", radius);
 
     // INIT
     double* D = (double*)calloc((arr1_lgt)*(arr2_lgt), sizeof(double));
-    for(unsigned int i = 1; i < arr1_lgt; i++) {
-        D[INDEX(i, 0)] = INFINITY;
+	
+	for(unsigned int j = 0; j < arr2_lgt; j++) {
+        for(unsigned int i = 0; i < arr1_lgt; i++) {
+			D[INDEX(i, j)] = INFINITY;
+		}
     }
-    for(unsigned int i = 1; i < arr2_lgt; i++) {
-        D[INDEX(0, i)] = INFINITY;
+	
+	D[INDEX(0, 0)] = 0.0;
+	for(int j = 1; j < arr2_lgt; j++) {
+		//printf("j, radius, fmax(1, j-radius), fmin(arr1_lgt, j+radius) : %d, %d, %d, %d \n", j, radius, fmax(1, j-radius), fmin(arr1_lgt, j+radius));
+        for(int i = fmax(1, j-radius); i < fmin(arr1_lgt, j+radius+1); i++) {
+			//printf("i, j: %d, %d \n", i, j);
+			D[INDEX(i, j)] = 0.0;
+		}
     }
-
+	
+	//for(unsigned int j = 0; j < arr2_lgt; j++) {
+    //    for(unsigned int i = 0; i < arr1_lgt; i++) {
+	//		printf("%.2f \t", D[INDEX(i, j)]);
+	//	}
+	//	printf("\n");
+    //}
+	
     // Go!
-    for(unsigned int j = 1; j < arr2_lgt; j++) {
-        for(unsigned int i = 1; i < arr1_lgt; i++) {
+    for(int j = 1; j < arr2_lgt; j++) {
+        for(int i = fmax(1, j-radius); i < fmin(arr1_lgt, j+radius+1); i++) { 
             float del_a = D[INDEX(i-1, j)]
                             + dist(arr1+((i-1)*n_feats), arr1+(i*n_feats), n_feats, degree)
                             + nu * (arr1_spec[i] - arr1_spec[i-1])

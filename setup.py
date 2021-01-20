@@ -7,7 +7,7 @@ with open("README.md", "r") as readme_file:
 
 setup(
     name="pytwed",
-    version="1.0.9",
+    version="1.0.10a1",
     license="MIT License",
     author="Pierre-Francois Marteau, JZ, Marcus Voss",
     setup_requires=["numpy"],
